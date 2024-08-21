@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApplicationBarosa.DataAccess.Repository.IRepository;
 using WebApplicationBarosa.Models;
 
@@ -8,25 +9,37 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
     public class DogController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+
         public DogController(IUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork
-;
-
+            _unitOfWork = unitOfWork;
         }
+
         public IActionResult Index()
         {
             List<Dog> objDogList = _unitOfWork.Dog.GetAll().ToList();
+            foreach (var dog in objDogList)
+            {
+                dog.Category = _unitOfWork.Category.Get(d => d.CategoryId == dog.CategoryId);
+            }
             return View(objDogList);
         }
 
         public IActionResult Create()
         {
-            ViewBag.CategoryList = _unitOfWork.Category.GetAll().ToList();
+            IEnumerable<SelectListItem> categoryList = _unitOfWork.Category.GetAll().Select(c => new SelectListItem
+            {
+                Text = c.TypeOfBreed,
+                Value = c.CategoryId.ToString()
+            });
+
+            ViewBag.CategoryList = new SelectList(categoryList, "Value", "Text");
+
             return View();
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Create(Dog dog)
         {
             if (ModelState.IsValid)
@@ -36,7 +49,15 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
                 TempData["success"] = "Dog created successfully";
                 return RedirectToAction("Index");
             }
-            ViewBag.CategoryList = _unitOfWork.Category.GetAll().ToList();
+
+            IEnumerable<SelectListItem> categoryList = _unitOfWork.Category.GetAll().Select(c => new SelectListItem
+            {
+                Text = c.TypeOfBreed,
+                Value = c.CategoryId.ToString()
+            });
+
+            ViewBag.CategoryList = new SelectList(categoryList, "Value", "Text");
+
             return View(dog);
         }
 
@@ -52,6 +73,7 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Edit(Dog dog)
         {
             if (ModelState.IsValid)
@@ -64,7 +86,6 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
             ViewBag.CategoryList = _unitOfWork.Category.GetAll().ToList();
             return View(dog);
         }
-
 
         public IActionResult Delete(int? id)
         {
@@ -80,7 +101,9 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
             }
             return View(dogFromDb);
         }
+
         [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public IActionResult DeletePOST(int? id)
         {
             Dog? obj = _unitOfWork.Dog.Get(u => u.Id == id);
@@ -94,5 +117,4 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
             return RedirectToAction("Index");
         }
     }
-
 }

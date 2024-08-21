@@ -10,11 +10,6 @@
     </div>
 
     <div class="mb-3 row p-1">
-        <label asp-for="Name" class="p-0"></label>
-        <input asp-for="Name" disabled class="form-control" />
-    </div>
-
-    <div class="mb-3 row p-1">
         <label asp-for="Breed" class="p-0"></label>
         <input asp-for="Breed" disabled class="form-control" />
     </div>
@@ -38,7 +33,7 @@
         <label asp-for="Gender" class="p-0"></label>
         <select asp-for="Gender" disabled class="form-control">
             <option value="">Select Gender</option>
-            @foreach (var gender in Enum.GetValues(typeof(WebApplicationBarosa.Models.Sex)).Cast<WebApplicationBarosa.Models.Sex>())
+            @foreach (var gender in Enum.GetValues(typeof(WebApplicationBarosa.Models.Dog.Sex)).Cast<WebApplicationBarosa.Models.Dog.Sex>())
             {
                 <option value="@gender" selected="@(gender == Model.Gender)">
                     @gender
@@ -48,7 +43,7 @@
     </div>
     <div class="mb-3 row p-1">
         <label asp-for="CategoryId" class="p-0"></label>
-        <input asp-for="CategoryId" type="text" disabled class="form-control" value="@Model.Category.Name" />
+        <input asp-for="CategoryId" type="text" disabled class="form-control" value="@Model.Category.CategoryId" />
         <span asp-validation-for="CategoryId" class="text-danger"></span>
     </div>
 

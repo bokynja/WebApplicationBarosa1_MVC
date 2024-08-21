@@ -6,19 +6,16 @@ namespace WebApplicationBarosa.Models
     public class Dog
     {
         [Key]
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [Required]
-        public string Name { get; set; }
+        public string? Breed { get; set; }
 
         [Required]
-        public string Breed { get; set; }
+        public string? Description { get; set; }
 
         [Required]
-        public string Description { get; set; }
-
-        [Required]
-        public string SKU { get; set; }
+        public string? SKU { get; set; }
 
         [Required]
         [Display(Name = "List price")]
@@ -35,11 +32,16 @@ namespace WebApplicationBarosa.Models
 
         [ForeignKey("CategoryId")]
         public Category Category { get; set; }
+
+        public enum Sex
+        {
+            Male,
+            Female
+        }
+
+        public string? ImageUrl { get; set; }
     }
 
-    public enum Sex
-    {
-        Male,
-        Female
-    }
+        
+
 }

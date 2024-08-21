@@ -24,33 +24,27 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
         {
             return View();
         }
+
         [HttpPost]
         public IActionResult Create(Category obj)
         {
-            if (obj.Name == obj.DisplayOrder.ToString())
-            {
-                {
-                    ModelState.AddModelError("name", "The Display Order can't exactly match the Name.");
-                }
-            }
-
             if (ModelState.IsValid)
             {
                 _unitOfWork.Category.Add(obj);
                 _unitOfWork.Save();
                 TempData["success"] = "Category created successfully";
                 return RedirectToAction("Index");
-
             }
-            return View();
+            return View(obj); 
         }
+
         public IActionResult Edit(int? id)
         {
             if (id == null || id == 0)
             {
                 return NotFound();
             }
-            Category categoryFromDb = _unitOfWork.Category.Get(u => u.Id == id);
+            Category categoryFromDb = _unitOfWork.Category.Get(u => u.CategoryId == id);
             if (categoryFromDb == null)
             {
                 return NotFound();
@@ -60,17 +54,14 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult Edit(Category obj)
         {
-
             if (ModelState.IsValid)
             {
                 _unitOfWork.Category.Update(obj);
                 _unitOfWork.Save();
                 TempData["success"] = "Category updated successfully";
-
                 return RedirectToAction("Index");
-
             }
-            return View();
+            return View(obj); // Da bi se vratili na formu sa porukama greške
         }
 
         public IActionResult Delete(int? id)
@@ -79,7 +70,7 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            Category? categoryFromDb = _unitOfWork.Category.Get(u => u.Id == id);
+            Category? categoryFromDb = _unitOfWork.Category.Get(u => u.CategoryId == id);
 
             if (categoryFromDb == null)
             {
@@ -90,7 +81,7 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
         [HttpPost, ActionName("Delete")]
         public IActionResult DeletePOST(int? id)
         {
-            Category? obj = _unitOfWork.Category.Get(u => u.Id == id);
+            Category? obj = _unitOfWork.Category.Get(u => u.CategoryId == id);
             if (obj == null)
             {
                 return NotFound();

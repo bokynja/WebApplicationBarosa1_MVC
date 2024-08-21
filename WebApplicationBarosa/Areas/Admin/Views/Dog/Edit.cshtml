@@ -11,12 +11,6 @@
     <div asp-validation-summary="All" class="text-danger"></div>
 
     <div class="mb-3 row p-1">
-        <label asp-for="Name" class="p-0"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3 row p-1">
         <label asp-for="Breed" class="p-0"></label>
         <input asp-for="Breed" class="form-control" />
         <span asp-validation-for="Breed" class="text-danger"></span>
@@ -44,7 +38,7 @@
         <label asp-for="Gender" class="p-0"></label>
         <select asp-for="Gender" class="form-control">
             <option value="">Select Gender</option>
-            @foreach (var gender in Enum.GetValues(typeof(WebApplicationBarosa.Models.Sex)).Cast<WebApplicationBarosa.Models.Sex>())
+            @foreach (var gender in Enum.GetValues(typeof(WebApplicationBarosa.Models.Dog.Sex)).Cast<WebApplicationBarosa.Models.Dog.Sex>())
             {
                 <option value="@gender" selected="@(gender == Model.Gender ? "selected" : null)">
                     @gender
@@ -53,14 +47,14 @@
         </select>
         <span asp-validation-for="Gender" class="text-danger"></span>
     </div>
+
     <div class="mb-3 row p-1">
         <label asp-for="CategoryId" class="p-0"></label>
-        <select asp-for="CategoryId" class="form-control" asp-items="@(new SelectList(ViewBag.CategoryList, "Id", "Name"))">
+        <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryList">
             <option value="">Select Category</option>
         </select>
         <span asp-validation-for="CategoryId" class="text-danger"></span>
     </div>
-
 
     <div class="row">
         <div class="col-6 col-md-3">
@@ -72,12 +66,8 @@
             </a>
         </div>
     </div>
-    
-
 </form>
 
 @section Scripts {
-    @{
-        <partial name="_ValidationScriptsPartial" />
-    }
+    <partial name="_ValidationScriptsPartial" />
 }
