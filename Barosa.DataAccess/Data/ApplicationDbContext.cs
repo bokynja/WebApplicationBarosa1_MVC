@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using WebApplicationBarosa.Models;
 
 namespace WebApplicationBarosa.DataAccess.Data
@@ -11,6 +12,14 @@ namespace WebApplicationBarosa.DataAccess.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Dog> Dogs { get; set; }
+
+        public List<Dog> GetDogsWithCategory(int categoryId)
+        {
+            return Dogs
+                .Include(d => d.Category)  // Uključuje Category u rezultat
+                .Where(d => d.CategoryId == categoryId)
+                .ToList();
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -89,6 +98,8 @@ namespace WebApplicationBarosa.DataAccess.Data
                     ImageUrl = ""
                 }
             );
+            
+
         }
     }
 }

@@ -30,13 +30,21 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                var categoryExists = _unitOfWork.Category.Get(u => u.TypeOfBreed == obj.TypeOfBreed);
+                if (categoryExists != null)
+                {
+                    ModelState.AddModelError("TypeOfBreed", "Category with this Type of Breed already exists.");
+                    return View(obj);
+                }
+
                 _unitOfWork.Category.Add(obj);
                 _unitOfWork.Save();
                 TempData["success"] = "Category created successfully";
                 return RedirectToAction("Index");
             }
-            return View(obj); 
+            return View(obj);
         }
+
 
         public IActionResult Edit(int? id)
         {

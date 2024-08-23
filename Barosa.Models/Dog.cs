@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApplicationBarosa.Models
@@ -6,7 +7,7 @@ namespace WebApplicationBarosa.Models
     public class Dog
     {
         [Key]
-        public int? Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
         public string? Breed { get; set; }
@@ -23,15 +24,8 @@ namespace WebApplicationBarosa.Models
         public double ListPrice { get; set; }
 
         [Required]
-        [Display(Name = "Sex")]
+        [Display(Name = "Gender")]
         public Sex Gender { get; set; }
-        [Required]
-
-        [Display(Name = "Category")]
-        public int CategoryId { get; set; }
-
-        [ForeignKey("CategoryId")]
-        public Category Category { get; set; }
 
         public enum Sex
         {
@@ -39,9 +33,13 @@ namespace WebApplicationBarosa.Models
             Female
         }
 
+        public int CategoryId { get; set; }
+        [ForeignKey("CategoryId")]
+        [ValidateNever]
+        public Category Category { get; set; }
+
+        [ValidateNever]
         public string? ImageUrl { get; set; }
     }
-
-        
 
 }

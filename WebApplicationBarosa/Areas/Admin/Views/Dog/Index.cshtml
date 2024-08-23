@@ -8,13 +8,13 @@
             </h2>
         </div>
         <div class="col-6 text-end">
-            <a asp-controller="Dog" asp-action="Create" class="btn btn-primary">
+            <a asp-controller="Dog" asp-action="Upsert" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Create New Dog
             </a>
         </div>
     </div>
 
-    <table class="table table-bordered table-striped">
+    <table id="tblData" class="table table-bordered table-striped" width="100%">
         <thead>
             <tr>
                 <th>Breed</th>
@@ -22,33 +22,12 @@
                 <th>SKU</th>
                 <th>List Price</th>
                 <th>Gender</th>
-                <th>CategoryId</th>
+                <th>Type of breed</th>
             </tr>
         </thead>
-        <tbody>
-            @foreach (var obj in Model)
-            {
-                <tr>
-          
-                    <td>@obj.Breed</td>
-                    <td>@obj.Description</td>
-                    <td>@obj.SKU</td>
-                    <td>@obj.ListPrice</td>
-                    <td>@obj.Gender</td>
-                    <td>@obj.CategoryId</td>
-
-                    <td>
-                        <div class="btn-group" role="group">
-                            <a asp-controller="Dog" asp-action="Edit" asp-route-id="@obj.Id" class="btn btn-primary mx-2">
-                                <i class="bi bi-pen"></i> Edit
-                            </a>
-                            <a asp-controller="Dog" asp-action="Delete" asp-route-id="@obj.Id" class="btn btn-danger mx-2">
-                                <i class="bi bi-trash"></i> Delete
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
     </table>
 </div>
+
+@section Scripts{
+    <script src="~/js/dog.js"></script>
+}

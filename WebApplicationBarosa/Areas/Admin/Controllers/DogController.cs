@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApplicationBarosa.DataAccess.Repository.IRepository;
 using WebApplicationBarosa.Models;
+using WebApplicationBarosa.Models.ViewModels;
 
 namespace WebApplicationBarosa.Areas.Admin.Controllers
 {
@@ -9,112 +10,129 @@ namespace WebApplicationBarosa.Areas.Admin.Controllers
     public class DogController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public DogController(IUnitOfWork unitOfWork)
+        public DogController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
             _unitOfWork = unitOfWork;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public IActionResult Index()
         {
-            List<Dog> objDogList = _unitOfWork.Dog.GetAll().ToList();
-            foreach (var dog in objDogList)
-            {
-                dog.Category = _unitOfWork.Category.Get(d => d.CategoryId == dog.CategoryId);
-            }
+            List<Dog> objDogList = _unitOfWork.Dog.GetAll(includeProperties:"Category").ToList();
+
             return View(objDogList);
         }
 
-        public IActionResult Create()
+        public IActionResult Upsert(int? id)
         {
-            IEnumerable<SelectListItem> categoryList = _unitOfWork.Category.GetAll().Select(c => new SelectListItem
+            DogVM dogVM = new()
             {
-                Text = c.TypeOfBreed,
-                Value = c.CategoryId.ToString()
-            });
+                CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
+                {
+                    Text = u.TypeOfBreed,
+                    Value = u.CategoryId.ToString()
+                }),
+                Dog = new Dog()
+            };
+            if (id == null || id == 0)
+            {
+                return View(dogVM);
+            }
+            else
+            {
+                //za update
+                dogVM.Dog = _unitOfWork.Dog.Get(u => u.Id == id);
+                return View(dogVM);
 
-            ViewBag.CategoryList = new SelectList(categoryList, "Value", "Text");
+            }
 
-            return View();
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(Dog dog)
+        public IActionResult Upsert(DogVM dogVM, IFormFile? file)
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.Dog.Add(dog);
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+                if (file != null)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    string dogPath = Path.Combine(wwwRootPath, @"images\dog");
+
+                    if (!string.IsNullOrEmpty(dogVM.Dog.ImageUrl))
+                    {
+                        var oldImagePath = Path.Combine(wwwRootPath, dogVM.Dog.ImageUrl.TrimStart('\\'));
+
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    using (var fileStream = new FileStream(Path.Combine(dogPath, fileName), FileMode.Create))
+                    {
+                        file.CopyTo(fileStream);
+                    }
+                    dogVM.Dog.ImageUrl = @"\images\dog\" + fileName;
+                }
+
+                if (dogVM.Dog.Id == 0)
+                {
+                    _unitOfWork.Dog.Add(dogVM.Dog);
+                }
+                else
+                {
+                    _unitOfWork.Dog.Update(dogVM.Dog);
+                }
+
                 _unitOfWork.Save();
                 TempData["success"] = "Dog created successfully";
                 return RedirectToAction("Index");
             }
 
-            IEnumerable<SelectListItem> categoryList = _unitOfWork.Category.GetAll().Select(c => new SelectListItem
+            //deo gde se dodaje povratna vrednost ako ModelState nije validan
+            dogVM.CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
             {
-                Text = c.TypeOfBreed,
-                Value = c.CategoryId.ToString()
+                Text = u.TypeOfBreed,
+                Value = u.CategoryId.ToString()
             });
 
-            ViewBag.CategoryList = new SelectList(categoryList, "Value", "Text");
-
-            return View(dog);
+            return View(dogVM);  // vraćanje view-a sa nevalidnim modelom
         }
 
-        public IActionResult Edit(int id)
-        {
-            var dog = _unitOfWork.Dog.Get(d => d.Id == id);
-            if (dog == null)
-            {
-                return NotFound();
-            }
-            ViewBag.CategoryList = _unitOfWork.Category.GetAll().ToList();
-            return View(dog);
-        }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(Dog dog)
+        #region API CALLS
+        [HttpGet]
+        public IActionResult GetAll(int id)
         {
-            if (ModelState.IsValid)
-            {
-                _unitOfWork.Dog.Update(dog);
-                _unitOfWork.Save();
-                TempData["success"] = "Dog updated successfully";
-                return RedirectToAction("Index");
-            }
-            ViewBag.CategoryList = _unitOfWork.Category.GetAll().ToList();
-            return View(dog);
+            List<Dog> objDogList = _unitOfWork.Dog.GetAll(includeProperties: "Category").ToList();
+            return Json(new { data = objDogList });
         }
 
         public IActionResult Delete(int? id)
         {
-            if (id == null || id == 0)
+            var dogToBeDeleted = _unitOfWork.Dog.Get(u=> u.Id == id);
+            if (dogToBeDeleted == null)
             {
-                return NotFound();
+                return Json(new { success = false, message = "Error while deleting" });
             }
-            Dog? dogFromDb = _unitOfWork.Dog.Get(u => u.Id == id);
+            if (!string.IsNullOrEmpty(dogToBeDeleted.ImageUrl))
+            {
+                var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, dogToBeDeleted.ImageUrl.TrimStart('\\'));
+                if (System.IO.File.Exists(oldImagePath))
+                {
+                    System.IO.File.Delete(oldImagePath);
+                }
+            }
 
-            if (dogFromDb == null)
-            {
-                return NotFound();
-            }
-            return View(dogFromDb);
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeletePOST(int? id)
-        {
-            Dog? obj = _unitOfWork.Dog.Get(u => u.Id == id);
-            if (obj == null)
-            {
-                return NotFound();
-            }
-            _unitOfWork.Dog.Remove(obj);
+            _unitOfWork.Dog.Remove(dogToBeDeleted);
             _unitOfWork.Save();
-            TempData["success"] = "Dog deleted successfully";
-            return RedirectToAction("Index");
+
+            return Json(new { success = true, message = "Delete successful" });
+
         }
+        #endregion
     }
 }

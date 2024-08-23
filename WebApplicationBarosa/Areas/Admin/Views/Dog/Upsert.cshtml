@@ -1,0 +1,88 @@
+﻿@model DogVM
+
+<form method="post" class="row" enctype="multipart/form-data">
+    <input asp-for="Dog.Id" hidden />
+    <input asp-for="Dog.ImageUrl" hidden />
+
+    <div class="border p-3 mt-4">
+        <h2 class="text-primary">@(Model.Dog.Id != 0 ? "Update" : "Create") Dog</h2>
+    </div>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3 row p-1">
+        <label asp-for="Dog.Breed" class="p-0"></label>
+        <input asp-for="Dog.Breed" class="form-control" />
+        <span asp-validation-for="Dog.Breed" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3 row p-1">
+        <label asp-for="Dog.Description" class="p-0"></label>
+        <textarea asp-for="Dog.Description" class="form-control" rows="4"></textarea>
+    </div>
+
+    <div class="mb-3 row p-1">
+        <label asp-for="Dog.SKU" class="p-0"></label>
+        <input asp-for="Dog.SKU" class="form-control" />
+        <span asp-validation-for="Dog.SKU" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3 row p-1">
+        <label asp-for="Dog.ListPrice" class="p-0"></label>
+        <input asp-for="Dog.ListPrice" type="number" step="0.01" class="form-control" />
+        <span asp-validation-for="Dog.ListPrice" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3 row p-1">
+        <label asp-for="Dog.Gender" class="p-0"></label>
+        <select asp-for="Dog.Gender" class="form-control">
+            <option value="" disabled selected>Select Gender</option>
+            @foreach (var gender in Enum.GetValues(typeof(WebApplicationBarosa.Models.Dog.Sex)).Cast<WebApplicationBarosa.Models.Dog.Sex>())
+            {
+                <option value="@gender">@gender</option>
+            }
+        </select>
+        <span asp-validation-for="Dog.Gender" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3 row p-1">
+        <label asp-for="Dog.CategoryId" class="p-0">Category</label>
+        <select asp-for="Dog.CategoryId" asp-items="@Model.CategoryList" class="form-select">
+            <option disabled selected class="text-muted">Select Category</option>
+        </select>
+        <span asp-validation-for="Dog.CategoryId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3 row p-1">
+        <label asp-for="Dog.ImageUrl" class="p-0"></label>
+        <input type="file" name="file" class="form-control">
+    </div>
+
+    <div class="col-2">
+        <img src="@Model.Dog.ImageUrl" style="width:100%; border-radius:5px; border:1px solid #bbb" />
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-md-3">
+            <button type="submit" class="btn btn-primary form-control">
+                @(Model.Dog.Id != 0 ? "Update" : "Create")
+            </button>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Dog" asp-action="Index" class="btn btn-outline-secondary border form-control">
+                Back to list
+            </a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        tinymce.init({
+            selector: 'textarea',
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+        });
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}
