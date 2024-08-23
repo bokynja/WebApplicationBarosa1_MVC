@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using WebApplicationBarosa.Models;
 
 namespace WebApplicationBarosa.DataAccess.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -12,6 +14,7 @@ namespace WebApplicationBarosa.DataAccess.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Dog> Dogs { get; set; }
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
         public List<Dog> GetDogsWithCategory(int categoryId)
         {
@@ -23,6 +26,8 @@ namespace WebApplicationBarosa.DataAccess.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Category>().HasData(
                 new Category { CategoryId = 9, TypeOfBreed = "Hunting Dogs" },
                 new Category { CategoryId = 10, TypeOfBreed = "Companion Dogs" },

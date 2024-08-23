@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApplicationBarosa.DataAccess.Repository.IRepository;
 using WebApplicationBarosa.Models;
 using WebApplicationBarosa.Models.ViewModels;
+using WebApplicationBarosa.Utility;
 
 namespace WebApplicationBarosa.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = SD.Role_Admin)]
+
     public class DogController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
