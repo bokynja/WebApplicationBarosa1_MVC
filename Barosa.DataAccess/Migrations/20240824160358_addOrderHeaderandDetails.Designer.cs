@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApplicationBarosa.DataAccess.Data;
 
@@ -11,9 +12,11 @@ using WebApplicationBarosa.DataAccess.Data;
 namespace WebApplicationBarosa.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240824160358_addOrderHeaderandDetails")]
+    partial class addOrderHeaderandDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -436,9 +439,6 @@ namespace WebApplicationBarosa.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ApplicationUserId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
@@ -452,8 +452,6 @@ namespace WebApplicationBarosa.DataAccess.Migrations
                         .HasColumnType("float");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("DogId");
 
@@ -647,10 +645,6 @@ namespace WebApplicationBarosa.DataAccess.Migrations
 
             modelBuilder.Entity("WebApplicationBarosa.Models.OrderDetail", b =>
                 {
-                    b.HasOne("WebApplicationBarosa.Models.OrderHeader", null)
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("ApplicationUserId");
-
                     b.HasOne("WebApplicationBarosa.Models.Dog", "Dog")
                         .WithMany()
                         .HasForeignKey("DogId")
@@ -705,11 +699,6 @@ namespace WebApplicationBarosa.DataAccess.Migrations
                         .HasForeignKey("CompanyID");
 
                     b.Navigation("Company");
-                });
-
-            modelBuilder.Entity("WebApplicationBarosa.Models.OrderHeader", b =>
-                {
-                    b.Navigation("OrderDetails");
                 });
 #pragma warning restore 612, 618
         }

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WebApplicationBarosa.DataAccess.Data;
 using WebApplicationBarosa.DataAccess.Repository.IRepository;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace WebApplicationBarosa.DataAccess.Repository
 {
@@ -18,7 +19,7 @@ namespace WebApplicationBarosa.DataAccess.Repository
         {
             _db = db;
             this.dbSet = _db.Set<T>();
-            _db.Dogs.Include(u => u.Category);
+            
         }
 
         public void Add(T entity)
@@ -26,9 +27,18 @@ namespace WebApplicationBarosa.DataAccess.Repository
             dbSet.Add(entity);
         }
 
-        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
+        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
         {
-            IQueryable<T> query = dbSet;
+            IQueryable<T> query;
+            if (tracked)
+            {
+                query = dbSet;
+            }
+            else {
+
+                query = dbSet.AsNoTracking();
+                
+        }
             query = query.Where(filter);
             if (!string.IsNullOrEmpty(includeProperties))
             {
@@ -40,10 +50,14 @@ namespace WebApplicationBarosa.DataAccess.Repository
             return query.FirstOrDefault();
         }
 
-        public IEnumerable<T> GetAll(string? includeProperties = null)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter, string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
-            if(!string.IsNullOrEmpty(includeProperties))
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            if (!string.IsNullOrEmpty(includeProperties))
             {
                 foreach( var includeProp in includeProperties.Split(new char[] {',' }, StringSplitOptions.RemoveEmptyEntries) )
                 {

@@ -1,0 +1,47 @@
+﻿@model WebApplicationBarosa.Models.OrderHeader
+
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<h2>Order Confirmation</h2>
+
+<p>Thank you for your order!</p>
+<p>Your Order Number: <strong>@Model.Id</strong></p>
+
+<div>
+    <h4>Order Details</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Dog Breed</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.OrderDetails != null)
+            {
+                @foreach (var item in Model.OrderDetails)
+                {
+                    <tr>
+                        <td>@item.Dog.Breed</td>
+                        <td>@item.Price.ToString("c")</td>
+                        <td>@item.Count</td>
+                        <td>@(item.Price * item.Count).ToString("C")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-right">Order Total:</td>
+                <td><strong>@Model.OrderTotal.ToString("c")</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<p>You will receive an email confirmation shortly.</p>
+<a asp-controller="Home" asp-action="Index" class="btn btn-primary">Continue Shopping</a>

@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using WebApplicationBarosa.DataAccess.Repository.IRepository;
 using WebApplicationBarosa.Models;
 using WebApplicationBarosa.Utility;
 
@@ -34,6 +35,7 @@ namespace WebApplicationBarosa.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IUnitOfWork _unitOfWork;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -41,8 +43,10 @@ namespace WebApplicationBarosa.Areas.Identity.Pages.Account
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IUnitOfWork unitOfWork)
         {
+            _unitOfWork = unitOfWork;
             _roleManager = roleManager;
             _userManager = userManager;
             _userStore = userStore;
@@ -108,7 +112,17 @@ namespace WebApplicationBarosa.Areas.Identity.Pages.Account
             public string? Role { get; set; }
             [ValidateNever]
             public IEnumerable<SelectListItem> RoleList { get; set; }
+
+            [Required]
+            public string? Name { get; set; }
+            public string? StreetAddress { get; set; }
+            public string? City { get; set; }
+            public string? PostalCode { get; set; }
+            public string? PhoneNumber { get; set; }
+            public int? CompanyId { get; set; }
+            public IEnumerable<SelectListItem> CompanyList { get; set; }
         }
+            
 
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -128,6 +142,12 @@ namespace WebApplicationBarosa.Areas.Identity.Pages.Account
                     Text = i,
                     Value = i
 
+                }),
+                CompanyList = _unitOfWork.Company.GetAll().Select(i => new SelectListItem
+                {
+                    Text = i.Name,
+                    Value = i.Id.ToString()
+
                 })
             };
 
@@ -145,6 +165,17 @@ namespace WebApplicationBarosa.Areas.Identity.Pages.Account
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                user.StreetAddress = Input.StreetAddress;
+                user.City = Input.City;
+                user.Name = Input.Name;
+                user.PostalCode = Input.PostalCode;
+                user.PhoneNumber = Input.PhoneNumber;
+
+                if(Input.Role == SD.Role_Company)
+                {
+                    user.CompanyID = Input.CompanyId;
+                }
+
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
@@ -199,8 +230,8 @@ namespace WebApplicationBarosa.Areas.Identity.Pages.Account
             }
             catch
             {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(IdentityUser)}'. " +
-                    $"Ensure that '{nameof(IdentityUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                    $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
                     $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
             }
         }

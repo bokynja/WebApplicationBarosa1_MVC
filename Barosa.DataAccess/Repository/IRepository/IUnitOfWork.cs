@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,11 @@ namespace WebApplicationBarosa.DataAccess.Repository.IRepository
     {
         ICategoryRepository Category { get; }
         IDogRepository Dog { get; }
+        ICompanyRepository Company { get; }
+        IShoppingCartRepository ShoppingCart { get; }
+        IApplicationUserRepository ApplicationUser { get; }
+        IOrderHeaderRepository OrderHeader { get; }
+        IOrderDetailRepository OrderDetail { get; }
 
         void Save();
     }

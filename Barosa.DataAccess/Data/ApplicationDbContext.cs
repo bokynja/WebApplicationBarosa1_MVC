@@ -14,6 +14,10 @@ namespace WebApplicationBarosa.DataAccess.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Dog> Dogs { get; set; }
+        public DbSet<Company> Companies { get; set; }
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<OrderHeader> OrderHeaders { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
         public List<Dog> GetDogsWithCategory(int categoryId)
@@ -33,6 +37,12 @@ namespace WebApplicationBarosa.DataAccess.Data
                 new Category { CategoryId = 10, TypeOfBreed = "Companion Dogs" },
                 new Category { CategoryId = 11 , TypeOfBreed = "Kid-Friendly Dogs" }
             );
+
+            modelBuilder.Entity<Company>().HasData(
+               new Company { Id = 1, Name = "Company1", StreetAddress = "123 Street", City="City1", PostalCode="123445566", PhoneNumber="1234567" },
+               new Company { Id = 2, Name = "Company2", StreetAddress = "345 Street", City = "City2", PostalCode = "34324323", PhoneNumber = "453534345" },
+               new Company { Id = 3, Name = "Company3", StreetAddress = "567 Street", City = "City3", PostalCode = "545345432", PhoneNumber = "12334567" }
+           );
 
             modelBuilder.Entity<Dog>().HasData(
                 new Dog

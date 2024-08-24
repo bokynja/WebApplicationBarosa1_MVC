@@ -11,8 +11,8 @@ namespace WebApplicationBarosa.Utility
     {
         public Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            //logic for emails
-            throw new NotImplementedException();
+            // Ova implementacija trenutno ne radi ništa.
+            return Task.CompletedTask;
         }
     }
 }
