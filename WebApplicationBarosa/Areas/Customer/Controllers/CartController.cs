@@ -130,15 +130,12 @@ namespace WebApplicationBarosa.Areas.Customer.Controllers
 
             if (applicationUser == null)
             {
-                // Ako korisnik nije pronađen, preusmerava na login
                 return RedirectToAction("Login", "Account");
             }
 
-            // Provera da li korisnik već postoji u bazi, ako postoji, update
             var existingOrderHeader = _unitOfWork.OrderHeader.Get(u => u.ApplicationUserId == userId && u.OrderStatus == SD.StatusPending);
             if (existingOrderHeader != null)
             {
-                // Ažuriraj postojeći nalog
                 existingOrderHeader.OrderTotal = orderTotal;
                 existingOrderHeader.Name = applicationUser.Name;
                 existingOrderHeader.PhoneNumber = applicationUser.PhoneNumber;
@@ -149,7 +146,6 @@ namespace WebApplicationBarosa.Areas.Customer.Controllers
             }
             else
             {
-                // Kreiraj novi nalog ako ne postoji
                 ShoppingCartVM.OrderHeader = new OrderHeader
                 {
                     ApplicationUserId = userId,
@@ -164,32 +160,49 @@ namespace WebApplicationBarosa.Areas.Customer.Controllers
                 };
 
                 _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+                _unitOfWork.Save();
             }
 
-            foreach (var item in shoppingCartList)
+            // Stripe logika
+            var domain = "https://localhost:7294/";
+            var options = new Stripe.Checkout.SessionCreateOptions
             {
-                _unitOfWork.ShoppingCart.Remove(item);
-            }
-
-            _unitOfWork.Save();
-
-            // Dodavanje OrderDetail za sve stavke iz korpe
-            foreach (var cart in shoppingCartList)
-            {
-                OrderDetail orderDetail = new()
+                PaymentMethodTypes = new List<string>
+        {
+            "card",
+        },
+                LineItems = shoppingCartList.Select(item => new Stripe.Checkout.SessionLineItemOptions
                 {
-                    DogId = cart.Dog.Id,
-                    OrderHeaderId = ShoppingCartVM.OrderHeader.Id,
-                    Price = cart.Dog.ListPrice,
-                    Count = cart.Count
-                };
-                _unitOfWork.OrderDetail.Add(orderDetail);
-            }
+                    PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(item.Dog.ListPrice * 100), // Stripe expects the amount in cents
+                        Currency = "usd",
+                        ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = item.Dog.Breed,
+                        },
+                    },
+                    Quantity = item.Count,
+                }).ToList(),
+                Mode = "payment",
+                SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+                CancelUrl = domain + "customer/cart/index",
+            };
 
+            var service = new Stripe.Checkout.SessionService();
+            var session = service.Create(options);
+
+            // Dodaj sesiju za Stripe u OrderHeader
+            ShoppingCartVM.OrderHeader.SessionId = session.Id;
+            ShoppingCartVM.OrderHeader.PaymentIntentId = session.PaymentIntentId;
             _unitOfWork.Save();
 
-            return RedirectToAction("OrderConfirmation", "Cart", new { id = ShoppingCartVM.OrderHeader.Id });
+            // Preusmeri korisnika na Stripe Checkout
+            Response.Headers.Add("Location", session.Url);
+            return new StatusCodeResult(303);
         }
+
+
 
 
 
