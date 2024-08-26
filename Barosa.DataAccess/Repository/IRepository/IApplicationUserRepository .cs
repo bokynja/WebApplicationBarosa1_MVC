@@ -9,5 +9,7 @@ namespace WebApplicationBarosa.DataAccess.Repository.IRepository
 {
     public interface IApplicationUserRepository : IRepository<ApplicationUser>
     {
+        ApplicationUser GetByEmail(string email);
     }
 }
+
